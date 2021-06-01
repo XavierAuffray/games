@@ -1,7 +1,7 @@
 require 'ruby2d'
 
 set background: 'blue'
-set fps_cap: 15
+set fps_cap: 5
 set width: 600
 set height: 400
 WIDTH = get :width
@@ -62,9 +62,9 @@ class Snake
 
   def set_sweet_position
     x = rand(0..29)
-    x = rand(0..29) while (x == @positions.first.first)
+    x = rand(0..29) while positions.map(&:first).include?(x)
     y = rand(0..19)
-    y = rand(0..19) while (y == @positions.first.last)
+    y = rand(0..19) while positions.map(&:last).include?(y)
     [x, y]
   end
 
