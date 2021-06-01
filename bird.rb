@@ -22,7 +22,7 @@ class Obstacle
   attr_accessor :x, :top_height, :bottom_height
 
   def set_bottom_height
-    HEIGHT - @top_height - 100
+    HEIGHT - @top_height - 80
   end
 
   def draw
@@ -86,9 +86,10 @@ class Game
   def initialize
     @obstacles = [Obstacle.new]
     @bird = Bird.new
+    @score = 0
   end
 
-  attr_accessor :obstacles, :bird
+  attr_accessor :obstacles, :bird, :score
 
   def hit_obstacle?
     @obstacles.each do |obstacle|
@@ -101,25 +102,43 @@ class Game
 end
 
 game = Game.new
+best_score = 0
 
 update do
   on :key_down do |event|
     game.bird.jump if event.key == 'space' && game.bird.can_jump?
   end
 
-  clear if game.bird.running
-  game.bird.draw if game.bird.running
-  game.bird.fall if game.bird.running
-  game.obstacles.each do |obstacle|
-    obstacle.draw
-    obstacle.move
-    if game.bird.time_to_new_obstacle
-      game.obstacles << Obstacle.new
-      game.bird.last_obstacle = Time.now
-      game.obstacles.shift if game.obstacles.size > 5
+  clear
+  if game.bird.running
+    Text.new("Score: #{game.score}")
+    Text.new("Best Score: #{best_score}", y: 20)
+  else
+    Text.new("Final Score: #{game.score}", x: 150, y: 150, size: 50)
+    Text.new("Best Score: #{best_score}", x: 150, y: 200, size: 30)
+    Text.new("press 'r' to restart", x: 150, y: 250, size: 20)
+    on :key_down do |event|
+      game = Game.new if event.key == 'r'
     end
   end
-  p 'hit' if game.hit_obstacle?
+  if game.bird.running
+    game.bird.draw
+    game.bird.fall
+    game.obstacles.each do |obstacle|
+      obstacle.draw
+      obstacle.move
+      if game.bird.time_to_new_obstacle
+        game.obstacles << Obstacle.new
+        game.bird.last_obstacle = Time.now
+        game.obstacles.shift if game.obstacles.size > 5
+        game.score += 1 if game.obstacles.size > 3
+      end
+    end
+  end
+  if game.hit_obstacle?
+    game.bird.running = false
+    best_score = game.score if game.score > best_score
+  end
 end
 
 show
