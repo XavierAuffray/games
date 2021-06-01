@@ -1,7 +1,7 @@
 require 'ruby2d'
 
 set background: 'blue'
-set fps_cap: 5
+set fps_cap: 20
 set width: 600
 set height: 400
 WIDTH = get :width
@@ -10,7 +10,6 @@ WIDTH_VALUE = 30
 HEIGHT_VALUE = 20
 GRID_WIDTH = WIDTH / WIDTH_VALUE
 GRID_HEIGTH = HEIGHT / HEIGHT_VALUE
-
 
 class Snake
   def initialize
@@ -28,15 +27,15 @@ class Snake
     positions.each do |position|
       Square.new(x: position.first * GRID_WIDTH,
                  y: position.last * GRID_HEIGTH,
-                 size: 18,
+                 size: HEIGHT_VALUE - 2,
                  color: 'green')
     end
   end
 
   def draw_sweet
-    Circle.new(x: sweet_position.first * GRID_WIDTH + 9,
-               y: sweet_position.last * GRID_HEIGTH + 9,
-               radius: 10,
+    Circle.new(x: sweet_position.first * GRID_WIDTH + HEIGHT_VALUE / 2,
+               y: sweet_position.last * GRID_HEIGTH + HEIGHT_VALUE / 2,
+               radius: HEIGHT_VALUE / 2,
                color: 'yellow')
   end
 
@@ -61,10 +60,10 @@ class Snake
   end
 
   def set_sweet_position
-    x = rand(0..29)
-    x = rand(0..29) while positions.map(&:first).include?(x)
-    y = rand(0..19)
-    y = rand(0..19) while positions.map(&:last).include?(y)
+    x = rand(0..WIDTH_VALUE - 1)
+    x = rand(0..WIDTH_VALUE - 1) while positions.map(&:first).include?(x)
+    y = rand(0..HEIGHT_VALUE - 1)
+    y = rand(0..HEIGHT_VALUE - 1) while positions.map(&:last).include?(y)
     [x, y]
   end
 
@@ -85,10 +84,10 @@ class Snake
   end
 
   def detect_wall_collision
-    new_apparition('left') if @positions.first.first == 0
-    new_apparition('right') if @positions.first.first == 30
-    new_apparition('top') if @positions.first.last == 0
-    new_apparition('bottom') if @positions.first.last == 20
+    new_apparition('left') if @positions.first.first.zero?
+    new_apparition('right') if @positions.first.first == WIDTH_VALUE
+    new_apparition('top') if @positions.first.last.zero?
+    new_apparition('bottom') if @positions.first.last == HEIGHT_VALUE
   end
 end
 
@@ -115,9 +114,9 @@ update do
       snake = Snake.new if event.key == 'r'
     end
   end
-  snake.draw if snake.running
-  snake.draw_sweet
-  snake.move
+  snake.draw
+  snake.draw_sweet if snake.running
+  snake.move if snake.running
   snake.detect_collision_sweet
   snake.detect_wall_collision
   if snake.positions.uniq.count != snake.positions.count && snake.positions.count != 3
