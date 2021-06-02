@@ -100,7 +100,6 @@ update do
     snake.direction = 'bottom' if event.key == 'down' && snake.direction != 'top'
     snake.direction = 'left' if event.key == 'left' && snake.direction != 'right'
     snake.direction = 'right' if event.key == 'right' && snake.direction != 'left'
-    p event.key
   end
 
   clear

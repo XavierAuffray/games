@@ -63,11 +63,13 @@ class Bird
   end
 
   def fall
+    return unless can_jump?
     @y += @fall_value
-    @fall_value *= 1.01
+    @fall_value *= 1.02
   end
 
   def jump
+    return unless @running
     @last_jump = Time.now
     @y -= 2
     @fall_value = 0.1
@@ -78,7 +80,7 @@ class Bird
   end
 
   def time_to_new_obstacle
-    Time.now - @last_obstacle > 1.3
+    Time.now - @last_obstacle > 1.5
   end
 end
 
@@ -99,6 +101,10 @@ class Game
     end
     false
   end
+
+  def hit_border
+    @bird.y.negative? || @bird.y > 20
+  end
 end
 
 game = Game.new
@@ -110,17 +116,6 @@ update do
   end
 
   clear
-  if game.bird.running
-    Text.new("Score: #{game.score}")
-    Text.new("Best Score: #{best_score}", y: 20)
-  else
-    Text.new("Final Score: #{game.score}", x: 150, y: 150, size: 50)
-    Text.new("Best Score: #{best_score}", x: 150, y: 200, size: 30)
-    Text.new("press 'r' to restart", x: 150, y: 250, size: 20)
-    on :key_down do |event|
-      game = Game.new if event.key == 'r'
-    end
-  end
   if game.bird.running
     game.bird.draw
     game.bird.fall
@@ -134,10 +129,23 @@ update do
         game.score += 1 if game.obstacles.size > 3
       end
     end
+    if game.hit_obstacle? || game.hit_border
+      game.bird.running = false
+      best_score = game.score if game.score > best_score
+    end
   end
-  if game.hit_obstacle?
-    game.bird.running = false
-    best_score = game.score if game.score > best_score
+  if game.bird.running
+    Text.new("Score: #{game.score}")
+    Text.new("Best Score: #{best_score}", y: 20)
+  else
+    game.obstacles.each(&:draw)
+    game.bird.draw
+    Text.new("Final Score: #{game.score}", x: 150, y: 150, size: 50)
+    Text.new("Best Score: #{best_score}", x: 150, y: 200, size: 30)
+    Text.new("press 'r' to restart", x: 150, y: 250, size: 20)
+    on :key_down do |event|
+      game = Game.new if event.key == 'r'
+    end
   end
 end
 
