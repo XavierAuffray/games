@@ -16,14 +16,10 @@ class Obstacle
   def initialize
     @x = 600
     @top_height = rand(10..300)
-    @bottom_height = set_bottom_height
+    @bottom_height = HEIGHT - @top_height - 80
   end
 
   attr_accessor :x, :top_height, :bottom_height
-
-  def set_bottom_height
-    HEIGHT - @top_height - 80
-  end
 
   def draw
     Rectangle.new(x: @x,
@@ -46,7 +42,7 @@ end
 class Bird
   def initialize
     @x = 5
-    @y = 0
+    @y = 1
     @last_jump = Time.now
     @last_obstacle = Time.now
     @fall_value = 0.1
@@ -135,8 +131,6 @@ update do
       game.bird.running = false
       best_score = game.score if game.score > best_score
     end
-  end
-  if game.bird.running
     Text.new("Score: #{game.score}")
     Text.new("Best Score: #{best_score}", y: 20)
   else
