@@ -15,7 +15,7 @@ GRID_HEIGTH = HEIGHT / HEIGHT_VALUE
 class Obstacle
   def initialize
     @x = 600
-    @top_height = rand(20..260)
+    @top_height = rand(10..300)
     @bottom_height = set_bottom_height
   end
 
@@ -46,7 +46,7 @@ end
 class Bird
   def initialize
     @x = 5
-    @y = 5
+    @y = 0
     @last_jump = Time.now
     @last_obstacle = Time.now
     @fall_value = 0.1
@@ -82,7 +82,7 @@ class Bird
   end
 
   def time_to_new_obstacle
-    Time.now - @last_obstacle > 1.5
+    Time.now - @last_obstacle > 1.3
   end
 end
 
