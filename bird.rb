@@ -1,3 +1,5 @@
+#!/home/javiero/.rbenv/shims/ruby
+
 require 'ruby2d'
 require 'time'
 
@@ -100,7 +102,7 @@ class Game
     false
   end
 
-  def hit_border
+  def hit_border?
     @bird.y.negative? || @bird.y > 20
   end
 end
@@ -127,7 +129,7 @@ update do
         game.score += 1 if game.obstacles.size > 3
       end
     end
-    if game.hit_obstacle? || game.hit_border
+    if game.hit_obstacle? || game.hit_border?
       game.bird.running = false
       best_score = game.score if game.score > best_score
     end

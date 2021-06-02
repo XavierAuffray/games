@@ -1,3 +1,5 @@
+#!/home/javiero/.rbenv/shims/ruby
+
 require 'ruby2d'
 
 set background: 'blue'
