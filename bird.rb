@@ -46,7 +46,7 @@ end
 class Bird
   def initialize
     @x = 5
-    @y = 12
+    @y = 5
     @last_jump = Time.now
     @last_obstacle = Time.now
     @fall_value = 0.1
@@ -64,12 +64,14 @@ class Bird
 
   def fall
     return unless can_jump?
+
     @y += @fall_value
     @fall_value *= 1.02
   end
 
   def jump
     return unless @running
+
     @last_jump = Time.now
     @y -= 2
     @fall_value = 0.1
