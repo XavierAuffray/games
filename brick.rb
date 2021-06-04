@@ -49,10 +49,9 @@ class Platform
 end
 
 class Ball
-  def initialize
-    @x = WIDTH / 2
-    @y = HEIGHT - 25
-    @speed = -5
+  def initialize(x, y)
+    @x = x
+    @y = y
     @angle = rand(-5.0..5.0)
   end
 
@@ -131,7 +130,7 @@ end
 class Game
   def initialize
     @platform = Platform.new
-    @balls = [Ball.new]
+    @balls = [Ball.new(HEIGHT - 25, WIDTH / 2)]
     @running = true
     @bricks = create_wall_of_bricks
     @last_low_brick = Time.now
@@ -207,7 +206,7 @@ class Game
             shuffle = rand(0..1)
             @sweets << Sweet.new(brick.x + 20, brick.y + 10) if shuffle == 1
           elsif brick.type == 'double'
-            @balls << Ball.new
+            @balls << Ball.new(@platform.p_right - @platform.p_size / 2)
           end
         elsif (brick.y..brick.y + 20).to_a.include?(ball.y) && (brick.x - 10..brick.x + 50).to_a.include?(ball.x.to_i)
           ball.bump('horizontaly')
@@ -217,7 +216,7 @@ class Game
             shuffle = rand(0..1)
             @sweets << Sweet.new(brick.x + 20, brick.y + 10) if shuffle == 1
           elsif brick.type == 'double'
-            @balls << Ball.new
+            @balls << Ball.new(@platform.p_right - @platform.p_size / 2)
           end
         end
       end
@@ -246,11 +245,10 @@ class Game
     @running = false if @bricks.empty?
     if @balls.empty?
       @lifes -= 1
-      @balls << Ball.new
+      @balls << Ball.new(HEIGHT - 25, WIDTH / 2)
       @started = false
       @platform = Platform.new
     end
-
   end
 
   def game_over?
