@@ -44,7 +44,7 @@ class Platform
   end
 
   def can_move?
-    Time.now - @last_move > 0.001
+    Time.now - @last_move > 0.01
   end
 end
 
@@ -98,12 +98,20 @@ class Brick
                     width: 38,
                     height: 20,
                     color: 'red')
+      Circle.new(x: @x + 19,
+                 y: @y + 10,
+                 radius: 9,
+                 color: '#FFC0CB')
     elsif @type == 'double'
       Rectangle.new(x: @x,
                     y: @y,
                     width: 38,
                     height: 20,
                     color: 'white')
+      Circle.new(x: @x + 19,
+                 y: @y + 10,
+                 radius: 9,
+                 color: 'red')
     end
   end
 end
@@ -133,7 +141,7 @@ class Game
     @platform = Platform.new
     @balls = [Ball.new(WIDTH / 2, HEIGHT - 25)]
     @running = true
-    @bricks = create_wall_of_bricks
+    @bricks = create_wall_of_bricks(1)
     @last_low_brick = Time.now
     @sweets = []
     @score = 0
@@ -179,45 +187,47 @@ class Game
     @balls.each { |ball| @balls.delete(ball) if ball.y > HEIGHT - 10 }
   end
 
-  def create_wall_of_bricks
-    bricks = []
-    x = 40
-    y = 40
-    2.times do
-      bricks << Brick.new(x, y, 'bigger')
-      x += 40
-      11.times do
-        bricks << Brick.new(x, y, 'regular')
-        x += 40
-      end
-      bricks << Brick.new(x, y, 'bigger')
-      y += 66
+  def create_wall_of_bricks(level)
+    if level == 1
+      bricks = []
       x = 40
-    end
-    x = 40
-    y = 62
-    2.times do
-      4.times do
-        bricks << Brick.new(x, y, 'regular')
+      y = 40
+      2.times do
+        bricks << Brick.new(x, y, 'bigger')
         x += 40
+        11.times do
+          bricks << Brick.new(x, y, 'regular')
+          x += 40
+        end
+        bricks << Brick.new(x, y, 'bigger')
+        y += 66
+        x = 40
       end
-      bricks << Brick.new(x, y, 'double')
-      x += 40
-      3.times do
-        bricks << Brick.new(x, y, 'regular')
-        x += 40
-      end
-      bricks << Brick.new(x, y, 'double')
-      x += 40
-      4.times do
-        bricks << Brick.new(x, y, 'regular')
-        x += 40
-      end
-      y += 22
       x = 40
+      y = 62
+      2.times do
+        4.times do
+          bricks << Brick.new(x, y, 'regular')
+          x += 40
+        end
+        bricks << Brick.new(x, y, 'double')
+        x += 40
+        3.times do
+          bricks << Brick.new(x, y, 'regular')
+          x += 40
+        end
+        bricks << Brick.new(x, y, 'double')
+        x += 40
+        4.times do
+          bricks << Brick.new(x, y, 'regular')
+          x += 40
+        end
+        y += 22
+        x = 40
+      end
     end
     # 5.times { bricks.sample.type = 'bigger' }
-    # 4.times { bricks.sample.type = 'double' }
+    # 100.times { bricks.sample.type = 'double' }
     bricks
   end
 
@@ -248,7 +258,7 @@ class Game
   end
 
   def low_brick
-    if Time.now - @last_low_brick > 20
+    if Time.now - @last_low_brick > 10
       @bricks.each { |b| b.y += 10 }
       @last_low_brick = Time.now
     end
@@ -319,6 +329,19 @@ update do
              x: 60,
              y: 200,
              size: 100)
+    Text.new("press 'n' for next stage",
+             x: 100,
+             y: 300,
+             size: 30)
+    on :key_held do |event|
+      if event.key == 'n'
+        game.balls = [Ball.new(WIDTH / 2, HEIGHT - 25)]
+        game.bricks = game.create_wall_of_bricks(1)
+        game.running = true
+        game.started = false
+        game.platform = Platform.new
+      end
+    end
   else
     Text.new('Game Over',
              x: 60,
@@ -328,7 +351,7 @@ update do
              x: 100,
              y: 300,
              size: 50)
-    on :key_held do |event|
+    on :key_down do |event|
       game = Game.new if event.key == 'r'
     end
   end
