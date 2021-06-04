@@ -229,8 +229,7 @@ class Game
           @bricks.delete(brick)
           @score += 10
           if brick.type == 'bigger'
-            shuffle = rand(0..1)
-            @sweets << Sweet.new(brick.x + 20, brick.y + 10) if shuffle == 1
+            @sweets << Sweet.new(brick.x + 20, brick.y + 10)
           elsif brick.type == 'double'
             @balls << Ball.new(@platform.p_right - @platform.p_size / 2, HEIGHT - 25)
           end
@@ -239,8 +238,7 @@ class Game
           @bricks.delete(brick)
           @score += 10
           if brick.type == 'bigger'
-            shuffle = rand(0..1)
-            @sweets << Sweet.new(brick.x + 20, brick.y + 10) if shuffle == 1
+            @sweets << Sweet.new(brick.x + 20, brick.y + 10)
           elsif brick.type == 'double'
             @balls << Ball.new(@platform.p_right - @platform.p_size / 2, HEIGHT - 25)
           end
