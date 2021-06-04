@@ -53,6 +53,7 @@ class Ball
     @x = x
     @y = y
     @angle = rand(-5.0..5.0)
+    @speed = -5
   end
 
   attr_accessor :x, :y, :angle, :speed
@@ -130,7 +131,7 @@ end
 class Game
   def initialize
     @platform = Platform.new
-    @balls = [Ball.new(HEIGHT - 25, WIDTH / 2)]
+    @balls = [Ball.new(WIDTH / 2, HEIGHT - 25)]
     @running = true
     @bricks = create_wall_of_bricks
     @last_low_brick = Time.now
@@ -190,8 +191,8 @@ class Game
       y += 22
       x = 40
     end
-    10.times { bricks.sample.type = 'bigger' }
-    10.times { bricks.sample.type = 'double' }
+    5.times { bricks.sample.type = 'bigger' }
+    5.times { bricks.sample.type = 'double' }
     bricks
   end
 
@@ -206,7 +207,7 @@ class Game
             shuffle = rand(0..1)
             @sweets << Sweet.new(brick.x + 20, brick.y + 10) if shuffle == 1
           elsif brick.type == 'double'
-            @balls << Ball.new(@platform.p_right - @platform.p_size / 2)
+            @balls << Ball.new(@platform.p_right - @platform.p_size / 2, HEIGHT - 25)
           end
         elsif (brick.y..brick.y + 20).to_a.include?(ball.y) && (brick.x - 10..brick.x + 50).to_a.include?(ball.x.to_i)
           ball.bump('horizontaly')
@@ -216,7 +217,7 @@ class Game
             shuffle = rand(0..1)
             @sweets << Sweet.new(brick.x + 20, brick.y + 10) if shuffle == 1
           elsif brick.type == 'double'
-            @balls << Ball.new(@platform.p_right - @platform.p_size / 2)
+            @balls << Ball.new(@platform.p_right - @platform.p_size / 2, HEIGHT - 25)
           end
         end
       end
@@ -245,7 +246,7 @@ class Game
     @running = false if @bricks.empty?
     if @balls.empty?
       @lifes -= 1
-      @balls << Ball.new(HEIGHT - 25, WIDTH / 2)
+      @balls << Ball.new(WIDTH / 2, HEIGHT - 25)
       @started = false
       @platform = Platform.new
     end
@@ -290,7 +291,12 @@ update do
         game.started = true
       end
     end
-  elsif game.lifes.zero?
+  elsif game.lifes >= 0
+    Text.new('Good Job',
+             x: 60,
+             y: 200,
+             size: 100)
+  else
     Text.new('Game Over',
              x: 60,
              y: 200,
@@ -302,11 +308,6 @@ update do
     on :key_held do |event|
       game = Game.new if event.key == 'r'
     end
-  else
-    Text.new('Good Job',
-             x: 60,
-             y: 200,
-             size: 100)
   end
 end
 
