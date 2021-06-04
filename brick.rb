@@ -153,8 +153,9 @@ class Game
   end
 
   def create_sweet
-    if Time.now - @last_sweet > 3
+    if Time.now - @last_sweet > 5
       @sweet = Sweet.new
+      @last_sweet = Time.now
     end
   end
 end
@@ -179,7 +180,7 @@ end
 
 class Sweet
   def initialize
-    @x = rand(10..WIDTH - 10)
+    @x = rand(10..600)
     @y = 10
   end
 
@@ -193,7 +194,7 @@ class Sweet
   end
 
   def move
-    @y += 1
+    @y += 5
   end
 end
 
