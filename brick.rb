@@ -142,15 +142,16 @@ class Game
     @balls = [Ball.new(WIDTH / 2, HEIGHT - 25)]
     @running = true
     @level = 1
-    @bricks = create_wall_of_bricks(@level)
+    @bricks = create_wall_of_bricks
     @last_low_brick = Time.now
     @sweets = []
     @score = 0
     @lifes = 3
     @started = false
+    @last_next_level = Time.now
   end
 
-  attr_accessor :platform, :balls, :running, :bricks, :sweets, :score, :lifes, :started
+  attr_accessor :platform, :balls, :running, :bricks, :sweets, :score, :lifes, :started, :level, :last_next_level, :last_low_brick
 
   def ball_hit_platform?
     @balls.each do |ball|
@@ -188,9 +189,9 @@ class Game
     @balls.each { |ball| @balls.delete(ball) if ball.y > HEIGHT - 10 }
   end
 
-  def create_wall_of_bricks(level)
+  def create_wall_of_bricks
     bricks = []
-    if level == 1
+    if @level == 1
       x = 40
       y = 40
       2.times do
@@ -226,21 +227,21 @@ class Game
         y += 22
         x = 40
       end
-    elsif level == 1
+    elsif @level == 2
       x = 40
       y = 40
       4.times do
         13.times do
-          bricks << Brick.new(x, y, 'regular')
+          bricks << Brick.new(x, y, 'double')
           x += 40
         end
         y += 22
         x = 40
       end
     end
+    bricks
     # 5.times { bricks.sample.type = 'bigger' }
     # 100.times { bricks.sample.type = 'double' }
-    bricks
   end
 
   def ball_hit_brick?
@@ -322,6 +323,16 @@ class Game
     fail? if @started
     game_over?
   end
+
+  def next_level
+    @balls = [Ball.new(WIDTH / 2, HEIGHT - 25)]
+    @level += 1
+    @bricks = create_wall_of_bricks
+    @running = true
+    @started = false
+    @platform = Platform.new
+    @last_next_level = Time.now
+  end
 end
 
 game = Game.new
@@ -345,15 +356,8 @@ update do
              x: 100,
              y: 300,
              size: 30)
-    on :key_held do |event|
-      if event.key == 'n'
-        game.balls = [Ball.new(WIDTH / 2, HEIGHT - 25)]
-        game.level += 1
-        game.bricks = game.create_wall_of_bricks(game.level)
-        game.running = true
-        game.started = false
-        game.platform = Platform.new
-      end
+    on :key_down do |event|
+      game.next_level if event.key == 'n'  if Time.now - game.last_next_level > 0.1
     end
   else
     Text.new('Game Over',
@@ -368,6 +372,7 @@ update do
       game = Game.new if event.key == 'r'
     end
   end
+  p game.level
 end
 
 show
