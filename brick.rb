@@ -44,7 +44,7 @@ class Platform
   end
 
   def can_move?
-    Time.now - @last_move > 0.01
+    Time.now - @last_move > 0.1
   end
 end
 
