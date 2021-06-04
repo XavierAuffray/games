@@ -183,16 +183,41 @@ class Game
     bricks = []
     x = 40
     y = 40
-    4.times do
-      13.times do
+    2.times do
+      bricks << Brick.new(x, y, 'bigger')
+      x += 40
+      11.times do
+        bricks << Brick.new(x, y, 'regular')
+        x += 40
+      end
+      bricks << Brick.new(x, y, 'bigger')
+      y += 66
+      x = 40
+    end
+    x = 40
+    y = 62
+    2.times do
+      4.times do
+        bricks << Brick.new(x, y, 'regular')
+        x += 40
+      end
+      bricks << Brick.new(x, y, 'double')
+      x += 40
+      3.times do
+        bricks << Brick.new(x, y, 'regular')
+        x += 40
+      end
+      bricks << Brick.new(x, y, 'double')
+      x += 40
+      4.times do
         bricks << Brick.new(x, y, 'regular')
         x += 40
       end
       y += 22
       x = 40
     end
-    5.times { bricks.sample.type = 'bigger' }
-    5.times { bricks.sample.type = 'double' }
+    # 5.times { bricks.sample.type = 'bigger' }
+    # 4.times { bricks.sample.type = 'double' }
     bricks
   end
 
