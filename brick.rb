@@ -10,18 +10,19 @@ HEIGHT = get :height
 
 class Platform
   def initialize
-    @p_size = 200
+    @p_size = 80
     @p_left = WIDTH / 2 - @p_size / 2
     @p_right = WIDTH / 2 + @p_size / 2
     @last_move = Time.now
+    @grow = 0
   end
 
-  attr_accessor :p_size, :p_left, :p_right
+  attr_accessor :p_size, :p_left, :p_right, :grow
 
   def draw
-    Line.new(x1: @p_left,
+    Line.new(x1: @p_left - @grow / 2,
              y1: HEIGHT - 10,
-             x2: @p_right,
+             x2: @p_right + @grow / 2,
              y2: HEIGHT - 10,
              width: 10)
   end
@@ -50,8 +51,8 @@ end
 class Ball
   def initialize
     @x = WIDTH / 2
-    @y = HEIGHT / 2
-    @speed = 5
+    @y = HEIGHT - 25
+    @speed = -5
     @angle = rand(-5.0..5.0)
   end
 
@@ -75,113 +76,42 @@ class Ball
   end
 end
 
-class Game
-  def initialize
-    @platform = Platform.new
-    @ball = Ball.new
-    @running = true
-    @bricks = create_wall_of_bricks
-    @last_low_brick = Time.now
-    @sweet = Sweet.new
-    @last_sweet = Time.now
-  end
-
-  attr_accessor :platform, :ball, :running, :bricks, :sweet
-
-  def ball_hit_platform?
-    if @ball.y > HEIGHT - 25 && (@platform.p_left..@platform.p_left + @platform.p_size / 4).to_a.include?(@ball.x.to_i)
-      @ball.angle -= 2
-      return true
-    elsif @ball.y > HEIGHT - 25 && (@platform.p_left + @platform.p_size / 4..@platform.p_left + @platform.p_size / 2).to_a.include?(@ball.x.to_i)
-      @ball.angle -= 1
-      return true
-    elsif @ball.y > HEIGHT - 25 && (@platform.p_left + @platform.p_size / 2..@platform.p_left + @platform.p_size * 3 / 4).to_a.include?(@ball.x.to_i)
-      @ball.angle += 1
-      return true
-    elsif @ball.y > HEIGHT - 25 && (@platform.p_left + @platform.p_size * 3 / 4..@platform.p_left + @platform.p_size).to_a.include?(@ball.x.to_i)
-      @ball.angle += 2
-      return true
-    end
-  end
-
-  def ball_hit_top?
-    @ball.y < 10
-  end
-
-  def ball_hit_wall?
-    @ball.x < 10 || @ball.x > WIDTH - 10
-  end
-
-  def ball_hit_floor?
-    @ball.y > HEIGHT - 10
-  end
-
-  def create_wall_of_bricks
-    bricks = []
-    x = 0
-    y = 40
-    b_index = 0
-    4.times do
-      15.times do
-        bricks << Brick.new(x, y, b_index)
-        x += 40
-        b_index += 1
-      end
-      y += 22
-      x = 0
-    end
-    bricks
-  end
-
-  def ball_hit_brick
-    @bricks.each do |brick|
-      if (brick.y - 10..brick.y + 30).to_a.include?(@ball.y) && (brick.x..brick.x + 40).to_a.include?(@ball.x.to_i)
-        @ball.bump('verticaly')
-        @bricks.delete(brick)
-      elsif (brick.y..brick.y + 20).to_a.include?(@ball.y) && (brick.x - 10..brick.x + 50).to_a.include?(@ball.x.to_i)
-        @ball.bump('horizontaly')
-        @bricks.delete(brick)
-      end
-    end
-  end
-
-  def low_brick
-    if Time.now - @last_low_brick > 20
-      @bricks.each { |b| b.y += 10 }
-      @last_low_brick = Time.now
-    end
-  end
-
-  def create_sweet
-    if Time.now - @last_sweet > 5
-      @sweet = Sweet.new
-      @last_sweet = Time.now
-    end
-  end
-end
-
 class Brick
-  def initialize(x, y, b_index)
+  def initialize(x, y, type)
     @x = x
     @y = y
-    @b_index = b_index
+    @type = type
   end
 
-  attr_accessor :b_index, :x, :y
+  attr_accessor :type, :x, :y
 
   def draw
-    Rectangle.new(x: @x,
-                  y: @y,
-                  width: 38,
-                  height: 20,
-                  color: 'green')
+    if @type == 'regular'
+      Rectangle.new(x: @x,
+                    y: @y,
+                    width: 38,
+                    height: 20,
+                    color: 'green')
+    elsif @type == 'bigger'
+      Rectangle.new(x: @x,
+                    y: @y,
+                    width: 38,
+                    height: 20,
+                    color: 'red')
+    elsif @type == 'double'
+      Rectangle.new(x: @x,
+                    y: @y,
+                    width: 38,
+                    height: 20,
+                    color: 'white')
+    end
   end
 end
 
 class Sweet
-  def initialize
-    @x = rand(10..600)
-    @y = 10
+  def initialize(x, y)
+    @x = x
+    @y = y
   end
 
   attr_accessor :x, :y
@@ -194,7 +124,159 @@ class Sweet
   end
 
   def move
-    @y += 5
+    @y += 2
+  end
+end
+
+class Game
+  def initialize
+    @platform = Platform.new
+    @balls = [Ball.new]
+    @running = true
+    @bricks = create_wall_of_bricks
+    @last_low_brick = Time.now
+    @sweets = []
+    @score = 0
+    @lifes = 3
+    @started = false
+  end
+
+  attr_accessor :platform, :balls, :running, :bricks, :sweets, :score, :lifes, :started
+
+  def ball_hit_platform?
+    @balls.each do |ball|
+      if ball.y > HEIGHT - 25 && (@platform.p_left..@platform.p_left + @platform.p_size / 4).to_a.include?(ball.x.to_i)
+        ball.angle -= 2
+        ball.speed *= -1
+      elsif ball.y > HEIGHT - 25 && (@platform.p_left + @platform.p_size / 4..@platform.p_left + @platform.p_size / 2).to_a.include?(ball.x.to_i)
+        ball.angle -= 1
+        ball.speed *= -1
+      elsif ball.y > HEIGHT - 25 && (@platform.p_left + @platform.p_size / 2..@platform.p_left + @platform.p_size * 3 / 4).to_a.include?(ball.x.to_i)
+        ball.angle += 1
+        ball.speed *= -1
+      elsif ball.y > HEIGHT - 25 && (@platform.p_left + @platform.p_size * 3 / 4..@platform.p_left + @platform.p_size).to_a.include?(ball.x.to_i)
+        ball.angle += 2
+        ball.speed *= -1
+      end
+    end
+  end
+
+  def ball_hit_top?
+    @balls.each { |ball| ball.bump('verticaly') if ball.y < 10 }
+  end
+
+  def ball_hit_wall?
+    @balls.each do |ball|
+      ball.bump('horizontaly') if ball.x < 10 || ball.x > WIDTH - 10
+    end
+  end
+
+  def ball_hit_floor?
+    if @balls.empty?
+      @platform = Platform.new
+      return @started = false
+    end
+    @balls.each { |ball| @balls.delete(ball) if ball.y > HEIGHT - 10 }
+  end
+
+  def create_wall_of_bricks
+    bricks = []
+    x = 40
+    y = 40
+    4.times do
+      13.times do
+        bricks << Brick.new(x, y, 'regular')
+        x += 40
+      end
+      y += 22
+      x = 40
+    end
+    10.times { bricks.sample.type = 'bigger' }
+    10.times { bricks.sample.type = 'double' }
+    bricks
+  end
+
+  def ball_hit_brick?
+    @balls.each do |ball|
+      @bricks.each do |brick|
+        if (brick.y - 10..brick.y + 30).to_a.include?(ball.y) && (brick.x..brick.x + 40).to_a.include?(ball.x.to_i)
+          ball.bump('verticaly') # here ??                                                                                    <<-----<<----<<
+          @bricks.delete(brick)
+          @score += 10
+          if brick.type == 'bigger'
+            shuffle = rand(0..1)
+            @sweets << Sweet.new(brick.x + 20, brick.y + 10) if shuffle == 1
+          elsif brick.type == 'double'
+            @balls << Ball.new
+          end
+        elsif (brick.y..brick.y + 20).to_a.include?(ball.y) && (brick.x - 10..brick.x + 50).to_a.include?(ball.x.to_i)
+          ball.bump('horizontaly')
+          @bricks.delete(brick)
+          @score += 10
+          if brick.type == 'bigger'
+            shuffle = rand(0..1)
+            @sweets << Sweet.new(brick.x + 20, brick.y + 10) if shuffle == 1
+          elsif brick.type == 'double'
+            @balls << Ball.new
+          end
+        end
+      end
+    end
+  end
+
+  def low_brick
+    if Time.now - @last_low_brick > 20
+      @bricks.each { |b| b.y += 10 }
+      @last_low_brick = Time.now
+    end
+  end
+
+  def ball_hit_sweet?
+    @sweets.each do |sweet|
+      next unless sweet.y > HEIGHT - 25 && (@platform.p_left..@platform.p_right).to_a.include?(sweet.x.to_i)
+
+      @sweets.delete(sweet)
+      @platform.p_size += 20
+      @platform.p_left -= 10
+      @platform.p_right += 10
+    end
+  end
+
+  def fail?
+    @running = false if @bricks.empty?
+    if @balls.empty?
+      @lifes -= 1
+      @balls << Ball.new
+      @started = false
+      @platform = Platform.new
+    end
+
+  end
+
+  def game_over?
+    return if @lifes >= 0
+
+    @running = false
+  end
+
+  def play
+    Text.new("Score: #{@score}")
+    Text.new("Lifes: #{@lifes}", y: 18, color: 'red')
+    @platform.draw
+    @balls.each { |ball| ball.move if @started }
+    @balls.each(&:draw)
+    ball_hit_platform?
+    ball_hit_top?
+    ball_hit_wall?
+    ball_hit_floor?
+    @bricks.each(&:draw)
+    ball_hit_brick?
+    low_brick
+    @sweets.each(&:draw) unless @sweets.empty?
+    @sweets.each(&:move) unless @sweets.empty?
+    ball_hit_sweet?
+    fail? if @started
+    game_over?
   end
 end
 
@@ -203,23 +285,30 @@ game = Game.new
 update do
   if game.running
     clear
+    game.play
     on :key_held do |event|
-      game.platform.move(event.key) if (event.key == 'left' || event.key == 'right') && game.platform.can_move?
+      if (event.key == 'left' || event.key == 'right') && game.platform.can_move?
+        game.platform.move(event.key)
+        game.started = true
+      end
     end
-    game.platform.draw
-    game.ball.move
-    game.ball.draw
-    game.ball.bump('verticaly') if game.ball_hit_platform? || game.ball_hit_top?
-    game.ball.bump('horizontaly') if game.ball_hit_wall?
-    game.running = false if game.ball_hit_floor?
-    game.bricks.each(&:draw)
-    game.ball_hit_brick
-    game.low_brick
-    game.create_sweet
-    if game.sweet
-      game.sweet.draw
-      game.sweet.move
+  elsif game.lifes.zero?
+    Text.new('Game Over',
+             x: 60,
+             y: 200,
+             size: 100)
+    Text.new("press 'r' to retry",
+             x: 100,
+             y: 300,
+             size: 50)
+    on :key_held do |event|
+      game = Game.new if event.key == 'r'
     end
+  else
+    Text.new('Good Job',
+             x: 60,
+             y: 200,
+             size: 100)
   end
 end
 
