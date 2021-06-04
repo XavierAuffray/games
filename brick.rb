@@ -141,7 +141,8 @@ class Game
     @platform = Platform.new
     @balls = [Ball.new(WIDTH / 2, HEIGHT - 25)]
     @running = true
-    @bricks = create_wall_of_bricks(1)
+    @level = 1
+    @bricks = create_wall_of_bricks(@level)
     @last_low_brick = Time.now
     @sweets = []
     @score = 0
@@ -188,8 +189,8 @@ class Game
   end
 
   def create_wall_of_bricks(level)
+    bricks = []
     if level == 1
-      bricks = []
       x = 40
       y = 40
       2.times do
@@ -219,6 +220,17 @@ class Game
         bricks << Brick.new(x, y, 'double')
         x += 40
         4.times do
+          bricks << Brick.new(x, y, 'regular')
+          x += 40
+        end
+        y += 22
+        x = 40
+      end
+    elsif level == 1
+      x = 40
+      y = 40
+      4.times do
+        13.times do
           bricks << Brick.new(x, y, 'regular')
           x += 40
         end
@@ -336,7 +348,8 @@ update do
     on :key_held do |event|
       if event.key == 'n'
         game.balls = [Ball.new(WIDTH / 2, HEIGHT - 25)]
-        game.bricks = game.create_wall_of_bricks(1)
+        game.level += 1
+        game.bricks = game.create_wall_of_bricks(game.level)
         game.running = true
         game.started = false
         game.platform = Platform.new
