@@ -238,6 +238,31 @@ class Game
         y += 22
         x = 40
       end
+    elsif @level == 3
+      x = 80
+      y = 40
+      2.times do
+        z = -1
+        11.times do
+          z.positive? ? bricks << Brick.new(x, y, 'regular') : bricks << Brick.new(x, y, 'double')
+          x += 40
+          z = -z
+        end
+        y += 66
+        x = 80
+      end
+      start = -10
+      x = -20
+      y = 128
+      3.times do
+        15.times do
+          bricks << Brick.new(x, y, 'regular')
+          x += 40
+        end
+        y += 22
+        start += 10
+        x = start
+      end
     end
     bricks
     # 5.times { bricks.sample.type = 'bigger' }
@@ -372,7 +397,6 @@ update do
       game = Game.new if event.key == 'r'
     end
   end
-  p game.level
 end
 
 show
