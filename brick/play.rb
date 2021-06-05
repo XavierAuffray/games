@@ -1,4 +1,5 @@
 require './ball.rb'
+require './wall.rb'
 require './platform.rb'
 require './brick.rb'
 require './sweet.rb'
@@ -24,14 +25,14 @@ update do
       Text.new("Press 'space' to start", x: 60, y: HEIGHT / 2, size: 50)
       game.arrow.draw
       on :key_held do |event|
-        game.arrow.move(event.key) if (event.key == 'right' || event.key == 'left') && Time.now - game.arrow.last_move > 0.1
+        game.arrow.move(event.key) if (event.key == 'right' || event.key == 'left')
       end
     end
     on :key_held do |event|
       game.platform.move(event.key) if (event.key == 'left' || event.key == 'right') && game.platform.can_move? && game.started
       if event.key == 'space'
         game.started = true
-        game.balls.first.angle = ((300 - game.arrow.x2) / 20) * -1
+        game.balls.first.angle = ((300 - game.arrow.x2) / 10) * -1
       end
     end
   elsif game.lifes >= 0

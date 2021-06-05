@@ -1,10 +1,12 @@
+require './wall.rb'
+
 class Game
   def initialize
     @platform = Platform.new
     @balls = [Ball.new(WIDTH / 2, HEIGHT - 25)]
     @running = true
     @level = 1
-    @bricks = create_wall_of_bricks
+    @wall = Wall.new(@level)
     @last_low_brick = Time.now
     @sweets = []
     @score = 0
@@ -14,7 +16,7 @@ class Game
     @arrow = Arrow.new
   end
 
-  attr_accessor :platform, :balls, :running, :bricks, :sweets, :score, :lifes, :started, :level, :last_next_level, :last_low_brick, :arrow
+  attr_accessor :platform, :balls, :running, :wall, :sweets, :score, :lifes, :started, :level, :last_next_level, :last_low_brick, :arrow
 
   def ball_hit_platform?
     @balls.each do |ball|
@@ -52,168 +54,13 @@ class Game
     @balls.each { |ball| @balls.delete(ball) if ball.y > HEIGHT - 10 }
   end
 
-  def create_wall_of_bricks
-    bricks = []
-    if @level == 1
-      x = 40
-      y = 40
-      2.times do
-        bricks << Brick.new(x, y, 'bigger', 1)
-        x += 40
-        11.times do
-          bricks << Brick.new(x, y, 'regular', 1)
-          x += 40
-        end
-        bricks << Brick.new(x, y, 'bigger', 1)
-        y += 66
-        x = 40
-      end
-      x = 40
-      y = 62
-      2.times do
-        4.times do
-          bricks << Brick.new(x, y, 'regular', 1)
-          x += 40
-        end
-        bricks << Brick.new(x, y, 'double', 1)
-        x += 40
-        3.times do
-          bricks << Brick.new(x, y, 'regular', 1)
-          x += 40
-        end
-        bricks << Brick.new(x, y, 'double', 1)
-        x += 40
-        4.times do
-          bricks << Brick.new(x, y, 'regular', 1)
-          x += 40
-        end
-        y += 22
-        x = 40
-      end
-    elsif @level == 2
-      x = 40
-      y = 40
-      4.times do
-        13.times do
-          bricks << Brick.new(x, y, 'double', 1)
-          x += 40
-        end
-        y += 22
-        x = 40
-      end
-    elsif @level == 3
-      x = 80
-      y = 40
-      2.times do
-        z = -1
-        11.times do
-          z.positive? ? bricks << Brick.new(x, y, 'regular', 1) : bricks << Brick.new(x, y, 'double', 1)
-          x += 40
-          z = -z
-        end
-        y += 66
-        x = 80
-      end
-      start = -10
-      x = -20
-      y = 128
-      3.times do
-        15.times do
-          bricks << Brick.new(x, y, 'regular', 1)
-          x += 40
-        end
-        y += 22
-        start += 10
-        x = start
-      end
-    elsif @level == 4
-      x = 0
-      y = 100
-      15.times do
-        bricks << Brick.new(x, y, 'rock', 3)
-        x += 40
-      end
-      x = 180
-      y = 78
-      5.times do
-        bricks << Brick.new(x, y, 'double', 1)
-        x += 40
-      end
-      x = 42
-      y = 122
-      13.times do
-        bricks << Brick.new(x, y, 'regular', 1)
-        x += 40
-      end
-      bricks << Brick.new(0, 122, 'bigger', 1)
-      bricks << Brick.new(WIDTH - 40, 122, 'bigger', 1)
-    elsif @level == 5
-      x = 0
-      y = 150
-      6.times do
-        bricks << Brick.new(x, y, 'rock', 3)
-        x += 40
-      end
-      x = WIDTH - 6 * 40
-      6.times do
-        bricks << Brick.new(x, y, 'rock', 3)
-        x += 40
-      end
-      x = 5 * 40
-      y = 128
-      4.times do
-        bricks << Brick.new(x, y, 'indestructible', 9999)
-        y -= 22
-      end
-      x = WIDTH - 6 * 40
-      y = 128
-      4.times do
-        bricks << Brick.new(x, y, 'indestructible', 9999)
-        y -= 22
-      end
-      x = WIDTH - 5 * 40
-      y = 128
-      3.times do
-        5.times do
-          bricks << Brick.new(x, y, 'regular', 1)
-          x += 40
-        end
-        x = WIDTH - 5 * 40
-        y -= 22
-      end
-      x = 0
-      y = 128
-      3.times do
-        5.times do
-          bricks << Brick.new(x, y, 'regular', 1)
-          x += 40
-        end
-        x = 0
-        y -= 22
-      end
-      x = WIDTH - 5 * 40
-      y = 62
-      5.times do
-        bricks << Brick.new(x, y, 'double', 1)
-        x += 40
-      end
-      x = 0
-      y = 62
-      5.times do
-        bricks << Brick.new(x, y, 'double', 1)
-        x += 40
-      end
-    end
-    bricks
-  end
-
   def ball_hit_brick?
     @balls.each do |ball|
-      @bricks.each do |brick|
+      @wall.bricks.each do |brick|
         if (brick.y - 10..brick.y + 30).to_a.include?(ball.y) && (brick.x..brick.x + 40).to_a.include?(ball.x.to_i)
           ball.bump('verticaly') # here ??                                                                                    <<-----<<----<<
           brick.solidity -= 1
-          @bricks.delete(brick) unless brick.solidity.positive?
+          @wall.bricks.delete(brick) unless brick.solidity.positive?
           @score += 10 unless brick.type == 'indestructible'
           if brick.type == 'bigger'
             @sweets << Sweet.new(brick.x + 20, brick.y + 10)
@@ -223,7 +70,7 @@ class Game
         elsif (brick.y..brick.y + 20).to_a.include?(ball.y) && (brick.x - 10..brick.x + 50).to_a.include?(ball.x.to_i)
           ball.bump('horizontaly')
           brick.solidity -= 1
-          @bricks.delete(brick) unless brick.solidity.positive?
+          @wall.bricks.delete(brick) unless brick.solidity.positive?
           @score += 10 unless brick.type == 'indestructible'
           if brick.type == 'bigger'
             @sweets << Sweet.new(brick.x + 20, brick.y + 10)
@@ -237,7 +84,7 @@ class Game
 
   def low_brick
     if Time.now - @last_low_brick > 10
-      @bricks.each { |b| b.y += 10 }
+      @wall.bricks.each { |b| b.y += 10 }
       @last_low_brick = Time.now
     end
   end
@@ -254,7 +101,7 @@ class Game
   end
 
   def fail?
-    @running = false if @bricks.empty?
+    @running = false if @wall.bricks.empty?
     if @balls.empty?
       @lifes -= 1
       @balls << Ball.new(WIDTH / 2, HEIGHT - 25, 0)
@@ -280,7 +127,7 @@ class Game
     ball_hit_top?
     ball_hit_wall?
     ball_hit_floor?
-    @bricks.each(&:draw)
+    @wall.bricks.each(&:draw)
     ball_hit_brick?
     low_brick
     @sweets.each(&:draw) unless @sweets.empty?
@@ -291,9 +138,9 @@ class Game
   end
 
   def next_level
-    @balls = [Ball.new(WIDTH / 2, HEIGHT - 25, 0)]
+    @balls = [Ball.new(WIDTH / 2, HEIGHT - 25)]
     @level += 1
-    @bricks = create_wall_of_bricks
+    @wall = Wall.new(@level)
     @running = true
     @started = false
     @platform = Platform.new
