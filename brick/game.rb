@@ -3,7 +3,7 @@ class Game
     @platform = Platform.new
     @balls = [Ball.new(WIDTH / 2, HEIGHT - 25)]
     @running = true
-    @level = 5
+    @level = 1
     @bricks = create_wall_of_bricks
     @last_low_brick = Time.now
     @sweets = []
@@ -11,9 +11,10 @@ class Game
     @lifes = 3
     @started = false
     @last_next_level = Time.now
+    @arrow = Arrow.new
   end
 
-  attr_accessor :platform, :balls, :running, :bricks, :sweets, :score, :lifes, :started, :level, :last_next_level, :last_low_brick
+  attr_accessor :platform, :balls, :running, :bricks, :sweets, :score, :lifes, :started, :level, :last_next_level, :last_low_brick, :arrow
 
   def ball_hit_platform?
     @balls.each do |ball|
@@ -256,7 +257,7 @@ class Game
     @running = false if @bricks.empty?
     if @balls.empty?
       @lifes -= 1
-      @balls << Ball.new(WIDTH / 2, HEIGHT - 25)
+      @balls << Ball.new(WIDTH / 2, HEIGHT - 25, 0)
       @started = false
       @platform = Platform.new
     end
@@ -290,12 +291,13 @@ class Game
   end
 
   def next_level
-    @balls = [Ball.new(WIDTH / 2, HEIGHT - 25)]
+    @balls = [Ball.new(WIDTH / 2, HEIGHT - 25, 0)]
     @level += 1
     @bricks = create_wall_of_bricks
     @running = true
     @started = false
     @platform = Platform.new
     @last_next_level = Time.now
+    @arrow = Arrow.new
   end
 end

@@ -1,8 +1,8 @@
 class Ball
-  def initialize(x, y)
+  def initialize(x, y, angle = rand(-5.0..5.0))
     @x = x
     @y = y
-    @angle = rand(-5.0..5.0)
+    @angle = angle
     @speed = -5
   end
 
