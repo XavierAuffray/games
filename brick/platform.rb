@@ -20,20 +20,20 @@ class Platform
   def move(direction)
     if direction == 'left'
       if @p_left.positive?
-        @p_left -= 10
-        @p_right -= 10
+        @p_left -= 5
+        @p_right -= 5
       end
     end
     if direction == 'right'
       if @p_right < WIDTH
-        @p_left += 10
-        @p_right += 10
+        @p_left += 5
+        @p_right += 5
       end
     end
     @last_move = Time.now
   end
 
   def can_move?
-    Time.now - @last_move > 0.01
+    Time.now - @last_move > 0.005
   end
 end

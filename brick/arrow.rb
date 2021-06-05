@@ -15,18 +15,21 @@ class Arrow
 
   def move(direction)
     if direction == 'left' && can_move?(direction)
-      @x2 -= 0.2
-      @x2 < WIDTH / 2 ? @y2 += 0.05 : @y2 -= 0.05
+      @x2 -= 1
+      @x2 < WIDTH / 2 ? @y2 += 0.25 : @y2 -= 0.25
     elsif direction == 'right' && can_move?(direction)
-      @x2 += 0.2
-      @x2 < WIDTH / 2 ? @y2 -= 0.05 : @y2 += 0.05
+      @x2 += 1
+      @x2 < WIDTH / 2 ? @y2 -= 0.25 : @y2 += 0.25
     end
   end
 
   def can_move?(direction)
+  	return unless Time.now - @last_move > 0.0001
+
+    @last_move = Time.now
     case direction
-    when 'left' then (300 - @x2) / 10 < 5
-    when 'right' then (300 - @x2) / 10 > -5
+    when 'left' then return (300 - @x2) / 10 < 5
+    when 'right' then return (300 - @x2) / 10 > -5
     end
   end
 end

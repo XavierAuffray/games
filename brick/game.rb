@@ -101,7 +101,7 @@ class Game
   end
 
   def fail?
-    @running = false if @wall.bricks.empty?
+    @running = false if @wall.bricks.empty? || @wall.bricks.count { |brick| brick.type == 'indestructible'} == @wall.bricks.size
     if @balls.empty?
       @lifes -= 1
       @balls << Ball.new(WIDTH / 2, HEIGHT - 25, 0)

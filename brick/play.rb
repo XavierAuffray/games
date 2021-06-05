@@ -9,7 +9,7 @@ require 'ruby2d'
 require 'time'
 
 set background: 'blue'
-set fps_cap: 100
+set fps_cap: 200
 set width: 600
 set height: 600
 WIDTH = get :width
