@@ -1,3 +1,5 @@
+#!/usr/bin/ruby
+
 require './ball.rb'
 require './wall.rb'
 require './platform.rb'

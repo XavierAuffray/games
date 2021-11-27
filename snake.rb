@@ -26,11 +26,18 @@ class Snake
   attr_accessor :positions, :direction, :running, :sweet_position, :score
 
   def draw
-    positions.each do |position|
-      Square.new(x: position.first * GRID_WIDTH,
-                 y: position.last * GRID_HEIGTH,
-                 size: HEIGHT_VALUE - 2,
-                 color: 'green')
+    positions.each_with_index do |position, index|
+      if index.zero?
+	      Square.new(x: position.first * GRID_WIDTH,
+	                 y: position.last * GRID_HEIGTH,
+	                 size: HEIGHT_VALUE - 2,
+	                 color: 'red')
+      else
+	      Square.new(x: position.first * GRID_WIDTH,
+	                 y: position.last * GRID_HEIGTH,
+	                 size: HEIGHT_VALUE - 2,
+	                 color: 'green')
+	  end
     end
   end
 
